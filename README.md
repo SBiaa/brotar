@@ -121,9 +121,20 @@ de migração (`DIRECT_URL`) é separada da conexão do app (`DATABASE_URL`).
 Para trabalhar sem sujar os dados principais, crie um **branch** no Neon e aponte
 o `.env` local para ele — o banco de produção fica intocado.
 
-Ao publicar (Vercel e afins), configure `DATABASE_URL`, `DIRECT_URL`,
-`AUTH_SECRET` e `APP_TIMEZONE` nas variáveis de ambiente do serviço, e rode
-`npx prisma migrate deploy` no build. O `postinstall` já roda `prisma generate`.
+## Publicando
+
+Configure três variáveis de ambiente no serviço (Vercel e afins):
+
+- `DATABASE_URL` — a string pooled do Neon
+- `AUTH_SECRET` — **um segredo diferente do local**; se vazar em um ambiente,
+  o outro continua íntegro
+- `APP_TIMEZONE` — `America/Sao_Paulo`
+
+`DIRECT_URL` é opcional: sem ela, a conexão de migração é derivada da pooled.
+
+O resto é automático — `postinstall` roda `prisma generate` e o script de build
+roda `prisma migrate deploy` antes do `next build`, então migração nova entra
+sozinha a cada deploy.
 
 ## O que ainda não existe
 
