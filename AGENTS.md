@@ -39,6 +39,10 @@ separada sem reescrever nada.
 - Ao detectar sessão sem conta, redirecione para `/sair`, não para `/entrar` —
   senão o proxy devolve a pessoa para dentro do app num laço.
 - `src/proxy.ts` roda no edge: nada de Prisma nem `next/headers` ali.
+- Nada de trabalho de banco no escopo de módulo. `next build` importa cada rota
+  para coletar metadados, e um cliente criado na importação faz o build inteiro
+  depender do banco estar acessível — foi assim que um deploy quebrou. O
+  `prisma` exportado por `src/server/db.ts` é preguiçoso de propósito.
 
 ## Front
 

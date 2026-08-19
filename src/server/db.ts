@@ -8,7 +8,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-function createClient() {
+function createClient(): PrismaClient {
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error("DATABASE_URL não configurada — copie .env.example para .env");
@@ -21,8 +21,24 @@ function createClient() {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+function getClient(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createClient();
+  }
+  return globalForPrisma.prisma;
 }
+
+/**
+ * O cliente só nasce no primeiro acesso, não quando o módulo é importado.
+ *
+ * `next build` importa cada rota para coletar metadados, e um cliente criado no
+ * escopo do módulo tentaria falar com o banco durante o build — o que quebra a
+ * build inteira num ambiente que só tem as credenciais em tempo de execução.
+ * O proxy mantém a ergonomia de `prisma.user.findMany()` sem esse custo.
+ */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property, receiver) {
+    const value = Reflect.get(getClient(), property, receiver);
+    return typeof value === "function" ? value.bind(getClient()) : value;
+  },
+}) as PrismaClient;

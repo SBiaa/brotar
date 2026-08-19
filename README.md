@@ -136,9 +136,16 @@ O `vercel.json` fixa as funções em `gru1` (São Paulo) para ficarem no mesmo
 continente que o banco no Neon (`sa-east-1`) — a região padrão da Vercel é nos
 Estados Unidos, e cada query pagaria a travessia.
 
-O resto é automático — `postinstall` roda `prisma generate` e o script de build
-roda `prisma migrate deploy` antes do `next build`, então migração nova entra
-sozinha a cada deploy.
+O `postinstall` roda `prisma generate` sozinho. **O build não toca no banco** —
+nem para migrar, nem para instanciar o cliente, que só nasce no primeiro acesso
+em tempo de execução. Assim um problema de conexão nunca derruba um deploy.
+
+Migração nova você aplica deliberadamente, antes de subir o código que depende
+dela:
+
+```bash
+npm run db:deploy
+```
 
 ## O que ainda não existe
 
