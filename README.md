@@ -17,13 +17,20 @@ npm install
 cp .env.example .env
 ```
 
-Gere um `AUTH_SECRET` e cole no `.env`:
+No `.env`, preencha as duas conexões do Neon (console → seu projeto → **Connect**):
+
+- `DATABASE_URL` — a string **com** `-pooler` no host. É a que o app usa a cada
+  request; quem segura o número de conexões é o pooler do Neon.
+- `DIRECT_URL` — a mesma string **sem** `-pooler`. Só a CLI do Prisma usa, para
+  migrar: o pooler não mantém a sessão necessária para aplicar DDL.
+
+Gere um `AUTH_SECRET` e cole no `.env` também:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Crie o banco e popule com dados de demonstração:
+Crie as tabelas e popule com dados de demonstração:
 
 ```bash
 npm run db:migrate && npm run db:seed
@@ -105,11 +112,18 @@ sessão órfã sem entrar em laço de redirect com o proxy.
 digitado por gente; `FeedList` quebra a string em nós React em vez de injetar
 HTML, então o negrito funciona sem abrir espaço para injeção.
 
-## De SQLite para Postgres
+## Banco
 
-Troque `provider = "sqlite"` por `"postgresql"` em `prisma/schema.prisma`, ajuste
-`DATABASE_URL`, troque o adapter em `src/server/db.ts` por `@prisma/adapter-pg`
-e rode `npm run db:migrate`. Nenhum modelo precisa mudar.
+Postgres no [Neon](https://neon.tech), via `@prisma/adapter-pg`. A url não fica
+no `schema.prisma` — o Prisma 7 a lê de `prisma.config.ts`, que é onde a conexão
+de migração (`DIRECT_URL`) é separada da conexão do app (`DATABASE_URL`).
+
+Para trabalhar sem sujar os dados principais, crie um **branch** no Neon e aponte
+o `.env` local para ele — o banco de produção fica intocado.
+
+Ao publicar (Vercel e afins), configure `DATABASE_URL`, `DIRECT_URL`,
+`AUTH_SECRET` e `APP_TIMEZONE` nas variáveis de ambiente do serviço, e rode
+`npx prisma migrate deploy` no build. O `postinstall` já roda `prisma generate`.
 
 ## O que ainda não existe
 

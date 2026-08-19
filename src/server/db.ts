@@ -1,4 +1,4 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/generated/prisma/client";
 
@@ -14,8 +14,10 @@ function createClient() {
     throw new Error("DATABASE_URL não configurada — copie .env.example para .env");
   }
 
+  // Aqui vai a string *pooled* do Neon (host com "-pooler"): cada request do
+  // Next abre sua própria conexão, e o pooler é quem segura isso.
   return new PrismaClient({
-    adapter: new PrismaBetterSqlite3({ url }),
+    adapter: new PrismaPg({ connectionString: url }),
   });
 }
 

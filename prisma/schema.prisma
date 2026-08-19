@@ -1,5 +1,6 @@
 // Brotar — schema de dados
-// SQLite por enquanto; trocar `provider` para "postgresql" não exige mudança de modelo.
+// Postgres (Neon). A url não fica aqui: o Prisma 7 a lê de prisma.config.ts,
+// que separa a conexão do app (pooled) da usada em migração (direta).
 
 generator client {
   provider = "prisma-client"
@@ -7,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
