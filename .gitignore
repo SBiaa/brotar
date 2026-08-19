@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# mas o exemplo entra no repositório
+!.env.example
+
+# banco local do SQLite
+*.db
+*.db-journal

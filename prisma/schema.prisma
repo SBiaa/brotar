@@ -1,0 +1,100 @@
+// Brotar — schema de dados
+// SQLite por enquanto; trocar `provider` para "postgresql" não exige mudança de modelo.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  habits      Habit[]
+  memberships Membership[]
+  events      FeedEvent[]
+  reactions   Reaction[]
+}
+
+model Habit {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  category   String
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries HabitEntry[]
+
+  @@index([userId])
+}
+
+// A existência da linha significa "feito nesse dia".
+// `date` é o dia local do usuário em YYYY-MM-DD, para não depender de fuso.
+model HabitEntry {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      String
+  createdAt DateTime @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([date])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  category    String
+  description String
+  createdAt   DateTime @default(now())
+
+  memberships Membership[]
+}
+
+model Membership {
+  id       String   @id @default(cuid())
+  userId   String
+  groupId  String
+  joinedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model FeedEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions Reaction[]
+
+  @@index([createdAt])
+}
+
+model Reaction {
+  id      String @id @default(cuid())
+  eventId String
+  userId  String
+  emoji   String
+
+  event FeedEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId, emoji])
+}
