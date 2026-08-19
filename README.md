@@ -132,6 +132,10 @@ Configure três variáveis de ambiente no serviço (Vercel e afins):
 
 `DIRECT_URL` é opcional: sem ela, a conexão de migração é derivada da pooled.
 
+O `vercel.json` fixa as funções em `gru1` (São Paulo) para ficarem no mesmo
+continente que o banco no Neon (`sa-east-1`) — a região padrão da Vercel é nos
+Estados Unidos, e cada query pagaria a travessia.
+
 O resto é automático — `postinstall` roda `prisma generate` e o script de build
 roda `prisma migrate deploy` antes do `next build`, então migração nova entra
 sozinha a cada deploy.
