@@ -147,6 +147,11 @@ dela:
 npm run db:deploy
 ```
 
+Para conferir um ambiente publicado, `GET /api/health` responde se cada variável
+está definida e se o banco responde — sem revelar nenhum valor. É a forma rápida
+de separar "variável não chegou no deploy" de "banco recusou a conexão", que de
+fora produzem o mesmo erro 500.
+
 ## O que ainda não existe
 
 Recuperação de senha, edição de hábito (só criar e arquivar), criação de grupos
