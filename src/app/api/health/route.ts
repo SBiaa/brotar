@@ -5,6 +5,18 @@ import { prisma } from "@/server/db";
 export const dynamic = "force-dynamic";
 
 /**
+ * A mensagem de erro do driver pode citar a string de conexão, o host ou o
+ * usuário. Como esta rota é pública, isso sai antes de virar resposta.
+ */
+function redact(message: string): string {
+  return message
+    .replace(/postgres(?:ql)?:\/\/\S+/gi, "[conexão]")
+    .replace(/[\w.-]+\.neon\.tech/gi, "[host]")
+    .replace(/\b[\w.-]+@[\w.-]+\b/g, "[credencial]")
+    .slice(0, 400);
+}
+
+/**
  * Diagnóstico de ambiente. Responde se as variáveis existem e se o banco
  * responde — nunca *qual* é o valor delas. Serve para distinguir "variável não
  * chegou no deploy" de "variável chegou mas o banco recusa a conexão", que da
@@ -23,10 +35,9 @@ export async function GET() {
       database = "ok";
     } catch (error) {
       database = "falhou";
-      // Nome e código do erro bastam para diagnosticar; a mensagem completa
-      // pode carregar host e usuário, então fica de fora.
       const code = (error as { code?: string }).code;
-      detalhe = error instanceof Error ? `${error.name}${code ? ` (${code})` : ""}` : "erro desconhecido";
+      const message = error instanceof Error ? redact(error.message) : "erro desconhecido";
+      detalhe = `${code ? `${code}: ` : ""}${message}`;
     }
   }
 
