@@ -48,3 +48,6 @@ next-env.d.ts
 # banco local do SQLite
 *.db
 *.db-journal
+
+# metadados do link com a Vercel (contém id do projeto e token OIDC)
+.vercel
